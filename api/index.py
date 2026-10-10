@@ -5,8 +5,8 @@ from google import genai
 app = Flask(__name__)
 
 @app.route('/', methods=['POST'])
+@app.route('/api', methods=['POST'])
 def webhook():
-    # Безопасно извлекаем данные запроса с force=True
     event = request.get_json(silent=True, force=True) or {}
     session = event.get('session', {})
     version = event.get('version', '1.0')
@@ -23,13 +23,13 @@ def webhook():
                 response_text = "Ошибка: не задан GEMINI_API_KEY в переменных Vercel."
             else:
                 client = genai.Client(api_key=api_key)
+                # Обновили название модели на актуальное
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-3.8-flash',
                     contents=user_text,
                 )
                 response_text = response.text
 
-        # Обязательно возвращаем session, чтобы Яндекс не выдавал ошибку 400
         return jsonify({
             "version": version,
             "session": session,
@@ -40,7 +40,6 @@ def webhook():
         })
 
     except Exception as e:
-        # Даже при ошибке возвращаем правильный JSON с сессией
         return jsonify({
             "version": version,
             "session": session,
@@ -51,5 +50,6 @@ def webhook():
         })
 
 @app.route('/', methods=['GET'])
+@app.route('/api', methods=['GET'])
 def health_check():
     return "Gemini Alice Webhook is running!"
