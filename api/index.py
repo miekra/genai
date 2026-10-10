@@ -3,15 +3,13 @@ import os
 
 app = Flask(__name__)
 
-# Этот роутер перехватывает вообще любые пути (будь то /api, корневой / или любые другие)
-@app.route('/', defaults={'path': ''}, methods=['POST', 'GET'])
-@app.route('/<path:path>', methods=['POST', 'GET'])
-def webhook(path):
+@app.route('/', methods=['POST', 'GET'])
+def webhook():
     if request.method == 'GET':
         return "Webhook is active.", 200
 
     try:
-        # Безопасно парсим JSON-запрос от Яндекса
+        # Безопасно получаем JSON от Яндекса
         event = request.get_json(silent=True, force=True) or {}
         session = event.get('session', {})
         version = event.get('version', '1.0')
@@ -37,7 +35,7 @@ def webhook(path):
                 except Exception as api_err:
                     response_text = f"Ошибка Gemini: {str(api_err)}"
 
-        # Возвращаем строгий JSON для Яндекса со статусом 200
+        # Отправляем валидный ответ Яндексу
         return jsonify({
             "version": version,
             "session": session,
@@ -48,7 +46,6 @@ def webhook(path):
         }), 200
 
     except Exception as e:
-        # Если произойдет сбой, вернем текст ошибки в чат Алисы
         return jsonify({
             "version": "1.0",
             "session": {"session_id": "error", "message_id": 0},
