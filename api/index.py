@@ -23,9 +23,9 @@ def webhook():
                 response_text = "Ошибка: не задан GEMINI_API_KEY в переменных Vercel."
             else:
                 client = genai.Client(api_key=api_key)
-                # Обновили название модели на актуальное
+                # Используем стабильную модель gemini-1.5-flash
                 response = client.models.generate_content(
-                    model='gemini-3.8-flash',
+                    model='gemini-1.5-flash',
                     contents=user_text,
                 )
                 response_text = response.text
