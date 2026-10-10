@@ -4,10 +4,10 @@ from google import genai
 
 app = Flask(__name__)
 
-@app.route('/api', methods=['POST'])
+@app.route('/', methods=['POST'])
 def webhook():
     try:
-        # Flask сам корректно парсит JSON от Яндекса
+        # Получаем JSON-запрос от Яндекс Диалогов
         event = request.get_json(silent=True) or {}
         
         user_text = event.get('request', {}).get('original_utterance', '')
@@ -20,6 +20,7 @@ def webhook():
             if not api_key:
                 response_text = "Ошибка: не задан GEMINI_API_KEY в переменных Vercel."
             else:
+                # Обращение к Gemini
                 client = genai.Client(api_key=api_key)
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
@@ -38,17 +39,16 @@ def webhook():
         })
 
     except Exception as e:
-        # Если произошла любая ошибка, возвращаем текст ошибки Алисе, чтобы не было пустого ответа
+        # Возвращаем ошибку текстом, чтобы Яндекс не выдавал empty response
         return jsonify({
             "version": "1.0",
             "session": event.get('session', {}),
             "response": {
-                "text": f"Произошла ошибка обработки: {str(e)}",
+                "text": f"Произошла ошибка: {str(e)}",
                 "end_session": False
             }
         })
 
-# Дополнительный маршрут на случай запроса без слеша или с ним
-@app.route('/api/', methods=['POST'])
-def webhook_slash():
-    return webhook()
+@app.route('/', methods=['GET'])
+def health_check():
+    return "Gemini Alice Webhook is running!"
