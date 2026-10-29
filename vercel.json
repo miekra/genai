@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "builds": [
+    { "src": "api/alice.js", "use": "@vercel/node" },
+    { "src": "api/health.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "^/api/alice/?$", "dest": "/api/alice.js" },
+    { "src": "^/api/health/?$", "dest": "/api/health.js" }
+  ]
+}
